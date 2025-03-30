@@ -1,0 +1,35 @@
+
+env_name: MountainCarContinuous-v0 # RL environment name
+base_path: runs/training # Base path to save logs and checkpoints
+seed: 42 # Seed for reproducibility
+description: MountainCar using CLIP reward
+tags: # Wandb tags
+    - training
+    - mountaincar
+    - gt 
+reward:
+    name: ground_truth
+    batch_size: 1
+    alpha: 0.5
+    cache_dir: root/.cache
+rl:
+    policy_name: MlpPolicy
+    policy_kwargs: 
+        log_std_init: -3.67
+        net_arch:
+            - 64
+            - 64
+    n_steps: 3000000 # Total number of simulation steps to be collected.
+    n_envs_per_worker: 8 # Number of environments per worker (GPU)
+    episode_length: 200 # Desired episode length
+    learning_starts: 0 # Number of env steps to collect before training
+    train_freq: 200 # (эта штука должна делиться на episode_length
+    batch_size: 256 # SAC buffer sample size per gradient step
+    gradient_steps: 50 # Number of samples to collect from the buffer per training step
+    tau: 0.01 # SAC target network update rate
+    gamma: 0.9999 # SAC discount factor
+    learning_rate: 1e-3 # SAC optimizer learning rate
+logging:
+    tensorboard_freq: 800
+    checkpoint_freq: 800 # Number of env steps between checkpoints
+    video_freq: 800 # Number of env steps between videos

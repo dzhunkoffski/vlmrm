@@ -1,0 +1,49 @@
+
+env_name: MountainCarContinuous-v0 # RL environment name
+base_path: runs/training # Base path to save logs and checkpoints
+seed: 42 # Seed for reproducibility
+description: MountainCar using CLIP reward
+tags: # Wandb tags
+  - training
+  - mountaincar
+  - CLIP
+reward:
+  name: clip
+  pretrained_model: ViT-g-14/laion2b_s34b_b88k  # CLIP 
+  # CLIP batch size per synchronous inference step.
+  # Batch size must be divisible by n_workers (GPU count)
+  # so that it can be shared among workers, and must be a divisor
+  # of n_envs * episode_length so that all batches can be of the
+  # same size (no support for variable batch size as of now.)
+  batch_size: 1600
+  alpha: 0.8 # Alpha value of Baseline CLIP (CO-RELATE)
+  target_prompts: # Description of the goal state
+    - a car at the peak of the mountain, next to the yellow flag
+  baseline_prompts: # Description of the environment
+    - a car in the mountain
+  # Path to pre-saved model weights. When executing multiple runs,
+  # mount a volume to this path to avoid downloading the model
+  # weights multiple times.
+  cache_dir: root/.cache
+rl:
+  policy_name: MlpPolicy
+  policy_kwargs:
+    net_arch:
+      pi: [64, 64]
+      qf: [64, 64]
+  n_steps: 1000000 # Total number of simulation steps to be collected.
+  n_envs_per_worker: 4 # Number of environments per worker (GPU)
+  episode_length: 400 # Desired episode length
+  learning_starts: 75000 # Number of env steps to collect before training
+  train_freq: 400 # (эта штука должна делиться на episode_length
+  batch_size: 64 # SAC buffer sample size per gradient step
+  gradient_steps: 4 # Number of samples to collect from the buffer per training step
+  tau: 0.01 # SAC target network update rate
+  gamma: 0.9999 # SAC discount factor
+  learning_rate: 1e-4 # SAC optimizer learning rate
+  ent_coef: "auto"
+  target_entropy: 0.1
+  buffer_size: 500000
+logging:
+  checkpoint_freq: 800 # Number of env steps between checkpoints
+  video_freq: 800 # Number of env steps between videos
